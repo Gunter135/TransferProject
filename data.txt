@@ -1,0 +1,68 @@
+<dependencies>
+    <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-java</artifactId>
+        <version>4.18.1</version>
+    </dependency>
+    <dependency>
+        <groupId>io.github.bonigarcia</groupId>
+        <artifactId>webdrivermanager</artifactId>
+        <version>5.7.0</version>
+    </dependency>
+</dependencies>
+
+WebDriverManager.chromedriver().setup();
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new"); // "--headless"
+        options.addArguments("--window-size=1920,1080");
+
+        WebDriver driver = new ChromeDriver(options);
+
+        try {
+            driver.get("https://sefsfsfsfesse.com");
+
+
+            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            Files.copy(screenshot.toPath(), new File("123.png").toPath());
+            System.out.println("123.png");
+        } finally {
+            driver.quit();
+        }
+
+
+
+WebDriverManager.chromedriver().setup();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new");
+        options.addArguments("--window-size=1920,1080");
+
+        WebDriver driver = new ChromeDriver(options);
+
+        try {
+            driver.get("https://example.com");
+
+            WebElement element = driver.findElement(By.cssSelector("h1")); // Example selector
+
+            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            BufferedImage fullImg = ImageIO.read(screenshot);
+
+            // Get element location and size
+            Point point = element.getLocation();
+            Dimension size = element.getSize();
+
+            // Crop the image
+            BufferedImage elementScreenshot = fullImg.getSubimage(
+                    point.getX(), point.getY(),
+                    size.getWidth(), size.getHeight());
+            ImageIO.write(elementScreenshot, "png", new File("element_screenshot.png"));
+
+            System.out.println("Element screenshot saved.");
+        } finally {
+            driver.quit();
+        }
+
+
+
+BufferedImage cropped = fullImg.getSubimage(100, 200, 300, 150);
+ImageIO.write(cropped, "png", new File("cropped_screenshot.png"));
