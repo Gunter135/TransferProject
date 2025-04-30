@@ -63,6 +63,9 @@ WebDriverManager.chromedriver().setup();
         }
 
 
+@JsonFormat(with = JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+
+
 
 BufferedImage cropped = fullImg.getSubimage(100, 200, 300, 150);
 ImageIO.write(cropped, "png", new File("cropped_screenshot.png"));
