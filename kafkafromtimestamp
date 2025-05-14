@@ -1,0 +1,21 @@
+// Map each TopicPartition to a timestamp (e.g., 1 hour ago)
+long timestamp = System.currentTimeMillis() - 3600_000;
+
+Map<TopicPartition, Long> timestampsToSearch = new HashMap<>();
+for (TopicPartition partition : consumer.partitionsFor("your-topic").stream()
+        .map(info -> new TopicPartition("your-topic", info.partition()))
+        .toList()) {
+    timestampsToSearch.put(partition, timestamp);
+}
+
+// Get offset for each timestamp
+Map<TopicPartition, OffsetAndTimestamp> offsets = consumer.offsetsForTimes(timestampsToSearch);
+
+// Assign and seek
+for (Map.Entry<TopicPartition, OffsetAndTimestamp> entry : offsets.entrySet()) {
+    OffsetAndTimestamp offsetAndTimestamp = entry.getValue();
+    if (offsetAndTimestamp != null) {
+        consumer.assign(List.of(entry.getKey()));
+        consumer.seek(entry.getKey(), offsetAndTimestamp.offset());
+    }
+}
