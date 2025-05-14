@@ -1,0 +1,80 @@
+import com.opencsv.CSVReader;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+import java.io.FileReader;
+import java.time.Instant;
+import java.time.Duration;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        // === 1. Read CSV ===
+        List<CSVEntry> csvEntries = new ArrayList<>();
+        try (CSVReader reader = new CSVReader(new FileReader("data.csv"))) {
+            String[] headers = reader.readNext(); // Skip header
+            String[] line;
+            while ((line = reader.readNext()) != null) {
+                String id = line[0];
+                String message = line[1];
+                String jsonString = line[2];
+                String timestampStr = line[3];
+
+                Instant csvTimestamp = Instant.parse(timestampStr); // ISO-8601
+                csvEntries.add(new CSVEntry(id, message, jsonString, csvTimestamp));
+            }
+        }
+
+        // === 2. Read Kafka Messages ===
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "csv-kafka-comparator");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+        consumer.subscribe(Collections.singletonList("your-topic"));
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        while (true) {
+            ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
+            for (ConsumerRecord<String, String> record : records) {
+                Instant kafkaTimestamp = Instant.ofEpochMilli(record.timestamp());
+
+                System.out.println("Kafka Msg: " + record.value());
+                System.out.println("Kafka Timestamp: " + kafkaTimestamp);
+
+                // === 3. Compare with CSV entries ===
+                for (CSVEntry csv : csvEntries) {
+                    if (csv.getMessage().equals(record.value())) {
+                        System.out.println("✔ Match Found:");
+                        System.out.println("CSV Timestamp: " + csv.getTimestamp());
+                        System.out.println("Kafka Timestamp: " + kafkaTimestamp);
+                        System.out.println("Time Difference (sec): " + Duration.between(csv.getTimestamp(), kafkaTimestamp).getSeconds());
+                        System.out.println("==="); 
+                    }
+                }
+            }
+        }
+    }
+
+    static class CSVEntry {
+        private String id;
+        private String message;
+        private String jsonData;
+        private Instant timestamp;
+
+        public CSVEntry(String id, String message, String jsonData, Instant timestamp) {
+            this.id = id;
+            this.message = message;
+            this.jsonData = jsonData;
+            this.timestamp = timestamp;
+        }
+
+        public String getMessage() { return message; }
+        public Instant getTimestamp() { return timestamp; }
+    }
+}
