@@ -17,3 +17,23 @@ char str2[] = "World!";
 strcat(str1, str2);
 
 lr_output_message("Concatenated String: %s", str1);
+
+
+
+char* generate_random_string(int length) {
+    static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    char* buffer = (char*)malloc(length + 1);  // +1 for null terminator
+
+    if (buffer == NULL) {
+        lr_error_message("Memory allocation failed");
+        return NULL;
+    }
+
+    for (int i = 0; i < length; i++) {
+        int key = rand() % (sizeof(charset) - 1);
+        buffer[i] = charset[key];
+    }
+
+    buffer[length] = '\0';  // Null-terminate
+    return buffer;
+}
