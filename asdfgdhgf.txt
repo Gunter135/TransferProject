@@ -1,0 +1,19 @@
+char *generate_random_string(int length) {
+    static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    static char random_string[256];
+
+    int i;
+    for (i = 0; i < length; i++) {
+        int key = rand() % (sizeof(charset) - 1);
+        random_string[i] = charset[key];
+    }
+    random_string[length] = '\0';
+    return random_string;
+}
+
+char str1[100] = "Hello, ";
+char str2[] = "World!";
+
+strcat(str1, str2);
+
+lr_output_message("Concatenated String: %s", str1);
