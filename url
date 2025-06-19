@@ -1,0 +1,19 @@
+String url = "https://example.com/api"; 
+URL obj = new URL(url);
+HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+con.setRequestMethod("POST");
+con.setRequestProperty("Content-Type", "application/json");
+con.setDoOutput(true);
+
+String jsonInputString = "{\"name\":\"John Doe\"}";
+
+try (OutputStream os = con.getOutputStream()) {
+    byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
+    os.write(input, 0, input.length);
+}
+
+int code = con.getResponseCode();
+Scanner scanner = new Scanner(con.getInputStream());
+String responseBody = scanner.useDelimiter("\\A").next();
+scanner.close();
