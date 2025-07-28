@@ -1,0 +1,20 @@
+def xml = new XmlSlurper(false, false).parseText(mockRequest.requestContent)
+
+// Navigate to <pin> — ignoring namespaces in inner nodes
+def pin = xml.'s:Body'
+            .'UWSConsumerSubjectInfoGetGetGoldRec'
+            .'inParms'
+            .'subPins'
+            .'recordSetRow'
+            .'pin'.text()
+
+log.info("PIN extracted: ${pin}")
+
+// Match pin content
+if (pin.contains("TEST_Z")) {
+    log.info("Returning ResponseWithTestZ")
+    return "ResponseWithTestZ"
+} else {
+    log.info("Returning DefaultResponse")
+    return "DefaultResponse"
+}
