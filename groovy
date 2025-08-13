@@ -11,3 +11,8 @@ context.setProperty("eanValue", eanValue)
 
 // Choose the mock response template
 return "DynamicResponse"
+
+
+def xml = new XmlSlurper(false, false).parseText(mockRequest.requestContent)
+def eanValue = xml.'**'.find { it.name() == 'ean' }?.text()
+log.info("EAN: ${eanValue}")
