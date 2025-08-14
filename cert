@@ -1,0 +1,2 @@
+openssl pkcs12 -export -in your_certificate.crt -inkey your_private.key -out output.p12
+keytool -importkeystore -srckeystore output.p12 -srcstoretype pkcs12 -destkeystore your_keystore.jks -deststoretype JKS
