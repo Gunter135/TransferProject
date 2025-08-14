@@ -172,3 +172,25 @@ public class TruststoreInitializer implements ApplicationRunner {
         System.out.println("Truststore loaded from classpath to: " + tempTruststore.getAbsolutePath());
     }
 }
+
+
+
+
+public class TruststoreInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    @Override
+    public void initialize(ConfigurableApplicationContext context) {
+        try {
+            Resource resource = context.getResource("classpath:truststore.jks");
+            File tempTruststore = File.createTempFile("truststore", ".jks");
+            tempTruststore.deleteOnExit();
+            try (InputStream in = resource.getInputStream();
+                 FileOutputStream out = new FileOutputStream(tempTruststore)) {
+                in.transferTo(out);
+            }
+            System.setProperty("spring.kafka.properties.ssl.truststore.location", tempTruststore.getAbsolutePath());
+            System.out.println("Truststore initialized at: " + tempTruststore.getAbsolutePath());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
