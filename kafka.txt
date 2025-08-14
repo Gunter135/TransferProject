@@ -1,11 +1,26 @@
 spring:
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: your.kafka.server:9093
+    security:
+      protocol: SASL_SSL
+    properties:
+      # JAAS config for SASL authentication
+      sasl.mechanism: SCRAM-SHA-512
+      sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required \
+        username="your_username" \
+        password="your_password";
+
+      # SSL truststore settings
+      ssl.truststore.location: /path/to/truststore.jks
+      ssl.truststore.password: changeit
+      ssl.truststore.type: JKS
+
     consumer:
       group-id: my-consumer-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -14,6 +29,7 @@ app:
   kafka:
     source-topic: source_topic
     target-topic: target_topic
+
 
 package com.example.kafkaconsumerproducer;
 
