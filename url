@@ -17,3 +17,14 @@ int code = con.getResponseCode();
 Scanner scanner = new Scanner(con.getInputStream());
 String responseBody = scanner.useDelimiter("\\A").next();
 scanner.close();
+
+
+SslContext sslContext = SslContextBuilder.forClient()
+                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                .build();
+
+        HttpClient httpClient = HttpClient.create().secure(t -> t.sslContext(sslContext));
+
+        WebClient client = WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .build();
