@@ -1,0 +1,50 @@
+public static void main(String[] args) throws Exception {
+        ObjectMapper jsonMapper = new ObjectMapper();
+
+        // Example JSON string
+        String json = "{\"name\":\"Alice\", \"age\":30}";
+
+        // Parse JSON into Jackson tree
+        JsonNode node = jsonMapper.readTree(json);
+
+        // Pack JSON manually into MessagePack
+        MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
+        packJson(node, packer);  // recursive helper
+        packer.close();
+
+        byte[] msgpackBytes = packer.toByteArray();
+
+        // Unpack back to JSON
+        MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(msgpackBytes);
+        JsonNode unpackedNode = jsonMapper.readTree(unpacker.readPayloadAsByteArray());
+
+        System.out.println("Unpacked JSON: " + unpackedNode.toString());
+    }
+
+    // Helper method: converts JSON -> MessagePack
+    private static void packJson(JsonNode node, MessageBufferPacker packer) throws Exception {
+        if (node.isObject()) {
+            packer.packMapHeader(node.size());
+            for (var field : node.fields()) {
+                packer.packString(field.getKey());
+                packJson(field.getValue(), packer);
+            }
+        } else if (node.isArray()) {
+            packer.packArrayHeader(node.size());
+            for (JsonNode item : node) {
+                packJson(item, packer);
+            }
+        } else if (node.isTextual()) {
+            packer.packString(node.asText());
+        } else if (node.isInt()) {
+            packer.packInt(node.asInt());
+        } else if (node.isLong()) {
+            packer.packLong(node.asLong());
+        } else if (node.isDouble()) {
+            packer.packDouble(node.asDouble());
+        } else if (node.isBoolean()) {
+            packer.packBoolean(node.asBoolean());
+        } else if (node.isNull()) {
+            packer.packNil();
+        }
+    }
