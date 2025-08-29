@@ -1,0 +1,17 @@
+void flatten(JsonNode node, String prefix, List<String> flatList) {
+    if (node.isObject()) {
+        node.fields().forEachRemaining(entry -> {
+            String newPrefix = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
+            flatten(entry.getValue(), newPrefix, flatList);
+        });
+    } else if (node.isArray()) {
+        for (int i = 0; i < node.size(); i++) {
+            String newPrefix = prefix + "[" + i + "]";
+            flatten(node.get(i), newPrefix, flatList);
+        }
+    } else {
+        // Primitive value
+        flatList.add(prefix);
+        flatList.add(node.asText());
+    }
+}
