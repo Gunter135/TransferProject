@@ -1,0 +1,57 @@
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+
+import java.io.File;
+import java.io.IOException;
+
+public class PdfUtil {
+
+    /**
+     * Creates a simple PDF with given text.
+     *
+     * @param filePath Path where the PDF will be saved
+     * @param title    Title text
+     * @param content  Body content text
+     */
+    public static void createPdf(String filePath, String title, String content) throws IOException {
+        // Create document
+        PDDocument document = new PDDocument();
+
+        // Create page
+        PDPage page = new PDPage(PDRectangle.A4);
+        document.addPage(page);
+
+        // Write content
+        try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+            // Title
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 18);
+            contentStream.newLineAtOffset(50, 750);
+            contentStream.showText(title);
+            contentStream.endText();
+
+            // Body
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA, 12);
+            contentStream.newLineAtOffset(50, 700);
+            contentStream.showText(content);
+            contentStream.endText();
+        }
+
+        // Save file
+        document.save(new File(filePath));
+        document.close();
+    }
+
+    public static void main(String[] args) {
+        try {
+            createPdf("example.pdf", "My First PDF", "Hello, this is a test PDF created in Java!");
+            System.out.println("PDF created successfully.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
