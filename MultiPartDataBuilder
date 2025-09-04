@@ -1,0 +1,55 @@
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
+
+public class HttpClientMultipart {
+    public static void main(String[] args) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        String boundary = "Boundary-" + UUID.randomUUID();
+        Path filePath = Path.of("example.txt");
+
+        // Build multipart body
+        String CRLF = "\r\n";
+        StringBuilder sb = new StringBuilder();
+
+        // Text field
+        sb.append("--").append(boundary).append(CRLF);
+        sb.append("Content-Disposition: form-data; name=\"description\"").append(CRLF).append(CRLF);
+        sb.append("Test file upload").append(CRLF);
+
+        // File header
+        sb.append("--").append(boundary).append(CRLF);
+        sb.append("Content-Disposition: form-data; name=\"file\"; filename=\"")
+          .append(filePath.getFileName()).append("\"").append(CRLF);
+        sb.append("Content-Type: text/plain").append(CRLF).append(CRLF);
+
+        // Convert to byte array
+        byte[] fileBytes = Files.readAllBytes(filePath);
+        byte[] preamble = sb.toString().getBytes();
+
+        byte[] ending = (CRLF + "--" + boundary + "--" + CRLF).getBytes();
+
+        // Combine everything
+        byte[] requestBody = new byte[preamble.length + fileBytes.length + ending.length];
+        System.arraycopy(preamble, 0, requestBody, 0, preamble.length);
+        System.arraycopy(fileBytes, 0, requestBody, preamble.length, fileBytes.length);
+        System.arraycopy(ending, 0, requestBody, preamble.length + fileBytes.length, ending.length);
+
+        // Build request
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://example.com/upload"))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(requestBody))
+                .build();
+
+        // Send request
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("Response: " + response.statusCode());
+        System.out.println(response.body());
+    }
+}
