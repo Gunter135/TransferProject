@@ -1,0 +1,6 @@
+web_reg_save_param_regexp(
+    "ParamName=MyToken",
+    "RegExp=\"([^\"]+)\"",
+    SEARCH_FILTERS,
+    "Scope=Body",
+    LAST);
