@@ -1,0 +1,10 @@
+UPDATE your_table_name AS t
+SET "PINeq" = m.pineq
+FROM (
+    VALUES
+        (245, 'PIN_A'),
+        (345, 'PIN_B'),
+        (675, 'PIN_C'),
+        (124, 'PIN_D')
+) AS m(dealid, pineq)
+WHERE t."DealId" = m.dealid;
