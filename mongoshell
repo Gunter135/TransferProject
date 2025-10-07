@@ -1,0 +1,21 @@
+let docs = [];
+
+for (let i = 0; i < 200; i++) {
+  docs.push({
+    "IdSignApp": "XX" + UUID().toString().replace(/-/g, ""),
+    "Status": NumberInt(1),
+    "CreateDate": ISODate("2025-09-18T06:20:22.148Z"),
+    "EditDate": ISODate("2025-09-18T12:04:22.358Z"),
+    "ObjectInfo": {
+      "IdObject": "x",
+      "ObjectTypeCode": "x",
+      "ClientInfo": {},
+      "IdClient": NumberInt(1)
+    },
+    "UserInfo": {
+      "IdUser": NumberInt(1)
+    }
+  });
+}
+
+db.SignOnline.insertMany(docs);
