@@ -1,18 +1,15 @@
-// Parse the incoming request, ignore namespaces
 def xml = new XmlSlurper(false, false).parseText(mockRequest.requestContent)
-
-// Extract <ean> value
 def eanValue = xml.'soapenv:Body'.'**'.find { it.name() == 'ean' }?.text()
-
 log.info("Extracted EAN: ${eanValue}")
-
-// Save for use in the mock response template
 context.setProperty("eanValue", eanValue)
-
-// Choose the mock response template
 return "DynamicResponse"
-
-
 def xml = new XmlSlurper(false, false).parseText(mockRequest.requestContent)
 def eanValue = xml.'**'.find { it.name() == 'ean' }?.text()
 log.info("EAN: ${eanValue}")
+
+
+// response time
+def requestStep = testRunner.testCase.testSteps["MySOAPRequest"]
+requestStep.httpRequest.setPropertyValue("Connect Timeout", "10000")
+requestStep.httpRequest.setPropertyValue("Socket Timeout", "30000") 
+log.info "Timeouts set: Connect=10s, Socket=30s"
