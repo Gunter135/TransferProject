@@ -1,0 +1,5 @@
+# Remove folder contents
+
+$Folder = "C:\Scripts\"
+Get-ChildItem $Folder | Remove-Item -recurse -Force
+write-host "Content of $Folder Deleted.." -BackgroundColor Green -ForegroundColor Black
