@@ -4,3 +4,4 @@ keytool -importkeystore -srckeystore <<truststore-name.jks>> -destkeystore keyst
 openssl pkcs12 -in keystore.p12 -out CARoot.pem
 keytool -exportcert -alias <<alias>> -keystore ./<<keystore—name.jks>> -rfc -file ./certificate.pem -storepass <<password>>
 keytool -importkeystore -srckeystore <<keystore-name.jks>> -destkeystore keystore.p12 -deststoretype PKCS12
+openssl pkcs12 -in keystore.p12 -nodes -nocerts -out RSAkey.pem
