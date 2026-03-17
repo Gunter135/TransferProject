@@ -1,3 +1,4 @@
+## PowerShell
 $searchText = "A"
 $replaceText = "B"
 $items = Get-ChildItem -Recurse | Sort-Object { $_.FullName.Length } -Descending
@@ -11,3 +12,39 @@ foreach ($item in $items) {
     }
 }
 Write-Host "Done!"
+
+
+## CMD
+@echo off
+setlocal enabledelayedexpansion
+
+set "SearchText=A"
+set "ReplaceText=B"
+
+echo Starting Recursive Rename...
+echo Searching for: "%SearchText%"
+echo Replacing with: "%ReplaceText%"
+echo ------------------------------------------
+
+for /r %%F in (*) do (
+    set "filepath=%%F"
+    set "filename=%%~nxF"
+    set "newname=!filename:%SearchText%=%ReplaceText%!"
+    if "!filename!" neq "!newname!" (
+        echo [FILE] Renaming: "!filepath!"
+        ren "%%F" "!newname!"
+    )
+)
+for /f "delims=" %%D in ('dir /s /b /ad ^| sort /R') do (
+    set "folderpath=%%D"
+    set "foldername=%%~nxD"
+    set "newname=!foldername:%SearchText%=%ReplaceText%!"
+    if "!foldername!" neq "!newname!" (
+        echo [FOLDER] Renaming: "!folderpath!"
+        ren "%%D" "!newname!"
+    )
+)
+
+echo ------------------------------------------
+echo Done!
+pause
