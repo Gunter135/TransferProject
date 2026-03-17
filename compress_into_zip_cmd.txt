@@ -39,3 +39,45 @@ for /d %%D in (*) do (
 
 echo ------------------------------------------
 echo Done! Zipped !count! folders.
+
+
+
+
+@echo off
+setlocal enabledelayedexpansion
+set "CompressionLevel=1"
+set "ZipTool=C:\Program Files\7-Zip\7z.exe"
+if not exist "!ZipTool!" set "ZipTool=C:\Program Files (x86)\7-Zip\7z.exe"
+
+if not exist "!ZipTool!" (
+    echo ERROR: 7-Zip not found. Please install 7-Zip.
+    pause
+    exit /b
+)
+
+echo Starting Bulk ZIP Creation (Contents Only)...
+echo Using: !ZipTool!
+echo Compression Level: !CompressionLevel!
+echo ------------------------------------------
+
+set count=0
+set "BaseDir=%cd%"
+
+for /d %%D in (*) do (
+    set /a count+=1
+    set "FolderName=%%~nxD"
+    set "ZipName=%%~nxD.zip"
+    echo [!count!] Zipping contents of: "!FolderName!"
+    cd /d "%%D"
+    "!ZipTool!" a -tzip -mx!CompressionLevel! -mmt=on -r -y "!BaseDir!\!ZipName!" "*"
+
+    if !errorlevel! equ 0 (
+        echo       ^> Created: "!ZipName!"
+    ) else (
+        echo       ^> ERROR: Failed to zip "!FolderName!"
+    )
+    cd /d "!BaseDir!"
+)
+
+echo ------------------------------------------
+echo Done! Zipped !count! folders.
