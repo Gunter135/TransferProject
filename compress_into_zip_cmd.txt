@@ -1,0 +1,41 @@
+@echo off
+setlocal enabledelayedexpansion
+
+:: ==========================================
+:: CONFIGURATION
+:: ==========================================
+:: Set compression level: 
+:: 0 = Store (Fastest, no compression)
+:: 1 = Fastest (Very Fast, low compression)
+:: 3 = Fast (Good balance)
+:: 5 = Normal (Default, slower)
+:: 9 = Ultra (Slowest)
+set "CompressionLevel=1"
+
+set "ZipTool=C:\Program Files\7-Zip\7z.exe"
+if not exist "!ZipTool!" set "ZipTool=C:\Program Files (x86)\7-Zip\7z.exe"
+
+if not exist "!ZipTool!" (
+    echo ERROR: 7-Zip not found at default locations.
+    echo Please install 7-Zip or edit the script with the correct path.
+    pause
+    exit /b
+)
+
+echo Starting Bulk ZIP Creation...
+echo Using: !ZipTool!
+echo Compression Level: !CompressionLevel! (1=Fastest, 5=Normal)
+echo ------------------------------------------
+
+  
+set count=0
+for /d %%D in (*) do (
+    set /a count+=1
+    set "FolderName=%%~nxD"
+    set "ZipName=%%~nxD.zip"
+    echo [!count!] Zipping: "!FolderName!"
+    "!ZipTool!" a -tzip -mx!CompressionLevel! -mmt=on -r -y "!ZipName!" "%%D\*"
+)
+
+echo ------------------------------------------
+echo Done! Zipped !count! folders.
