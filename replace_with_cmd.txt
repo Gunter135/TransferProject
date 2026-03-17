@@ -1,43 +1,95 @@
-@echo off
-chcp 65001
-setlocal enabledelayedexpansion
+Небольшая помарка this is not CMD script, it's VBScript
 
-set "SearchText=orm"
-set "ReplaceText=ume"
-set "FileFilter=*.txt *.js *.css *.html *.xml *.json"
+' ==========================================
+' CONFIGURATION - EDIT THESE LINES
+' ==========================================
+Dim searchText : searchText = "orm"
+Dim replaceText : replaceText = "ume"
+Dim startFolder : startFolder = "." ' "." means current folder
+Dim fileFilter : fileFilter = "*.txt,*.js,*.css,*.html,*.xml,*.json,*.bat,*.cmd"
+' ==========================================
 
-echo Starting Find & Replace (CMD Only)...
-echo Search: "%SearchText%"
-echo Replace: "%ReplaceText%"
-echo Filter: %FileFilter%
-echo ------------------------------------------
+On Error Resume Next
 
-set "count=0"
-set "modified=0"
+Dim fso, rootFolder
+Set fso = CreateObject("Scripting.FileSystemObject")
 
-for %%F in (%FileFilter%) do (
-    set "filepath=%%F"
-    set /a count+=1
+' Get the absolute path of the starting folder
+If startFolder = "." Then
+    Set rootFolder = fso.GetFolder(fso.GetAbsolutePathName("."))
+Else
+    Set rootFolder = fso.GetFolder(startFolder)
+End If
+
+WScript.Echo "Starting Find & Replace (VBScript)..."
+WScript.Echo "Search: " & searchText
+WScript.Echo "Replace: " & replaceText
+WScript.Echo "Folder: " & rootFolder.Path
+WScript.Echo "------------------------------------------"
+
+Dim fileCount, modCount
+fileCount = 0
+modCount = 0
+
+' Start the recursion
+ProcessFolder rootFolder
+
+WScript.Echo "------------------------------------------"
+WScript.Echo "Done! Scanned: " & fileCount & ", Modified: " & modCount
+
+Sub ProcessFolder(folder)
+    Dim file, subFolder, filePath, content, newContent, ext, shouldProcess
     
-    findstr /c:"%SearchText%" "%%F" >nul 2>&1
-    if !errorlevel! equ 0 (
-        echo [Processing] "%%F"
+    ' Process Files
+    For Each file In folder.Files
+        fileCount = fileCount + 1
+        filePath = file.Path
+        ext = LCase(fso.GetExtensionName(filePath))
         
-        set "tempfile=%%F.tmp"
-        for /f "delims=" %%A in ('findstr /n "^" "%%F"') do (
-            set "line=%%A"
-            set "line=!line:*:=!"
-            set "line=!line:%SearchText%=%ReplaceText%!"
-            echo(!line!>>"!tempfile!"
-        )
+        ' Check filter (simple check)
+        shouldProcess = False
+        If InStr(fileFilter, "*.*") > 0 Then
+            shouldProcess = True
+        Else
+            Dim filterItem
+            For Each filterItem In Split(fileFilter, ",")
+                If LCase(file.Name) Like LCase(Trim(filterItem)) Then
+                    shouldProcess = True
+                    Exit For
+                End If
+            Next
+        End If
         
-        if exist "!tempfile!" (
-            move /y "!tempfile!" "%%F" >nul
-            set /a modified+=1
-            echo [Saved] "%%F"
-        )
-    )
-)
-
-echo ------------------------------------------
-echo Done! Scanned: %count% files, Modified: %modified% files.
+        If shouldProcess Then
+            On Error Resume Next
+            ' Read File
+            Dim ts
+            Set ts = fso.OpenTextFile(filePath, 1, False, -1) ' -1 = TristateUseDefault
+            If Err.Number = 0 Then
+                content = ts.ReadAll
+                ts.Close
+                
+                ' Check and Replace
+                If InStr(content, searchText) > 0 Then
+                    newContent = Replace(content, searchText, replaceText, 1, -1, 0)
+                    
+                    ' Write Back
+                    Set ts = fso.OpenTextFile(filePath, 2, False, -1)
+                    ts.Write newContent
+                    ts.Close
+                    modCount = modCount + 1
+                    WScript.Echo "[MODIFIED] " & filePath
+                End If
+            End If
+            On Error Goto 0
+        End If
+    Next
+    
+    ' Process Subfolders
+    For Each subFolder In folder.SubFolders
+        ' Skip system hidden folders often causing issues
+        If (subFolder.Attributes And 2) = 0 Then 
+            ProcessFolder subFolder
+        End If
+    Next
+End Sub
