@@ -1,0 +1,43 @@
+@echo off
+chcp 65001
+setlocal enabledelayedexpansion
+
+set "SearchText=orm"
+set "ReplaceText=ume"
+set "FileFilter=*.txt *.js *.css *.html *.xml *.json"
+
+echo Starting Find & Replace (CMD Only)...
+echo Search: "%SearchText%"
+echo Replace: "%ReplaceText%"
+echo Filter: %FileFilter%
+echo ------------------------------------------
+
+set "count=0"
+set "modified=0"
+
+for %%F in (%FileFilter%) do (
+    set "filepath=%%F"
+    set /a count+=1
+    
+    findstr /c:"%SearchText%" "%%F" >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo [Processing] "%%F"
+        
+        set "tempfile=%%F.tmp"
+        for /f "delims=" %%A in ('findstr /n "^" "%%F"') do (
+            set "line=%%A"
+            set "line=!line:*:=!"
+            set "line=!line:%SearchText%=%ReplaceText%!"
+            echo(!line!>>"!tempfile!"
+        )
+        
+        if exist "!tempfile!" (
+            move /y "!tempfile!" "%%F" >nul
+            set /a modified+=1
+            echo [Saved] "%%F"
+        )
+    )
+)
+
+echo ------------------------------------------
+echo Done! Scanned: %count% files, Modified: %modified% files.
