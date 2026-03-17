@@ -1,0 +1,13 @@
+$searchText = "A"
+$replaceText = "B"
+$items = Get-ChildItem -Recurse | Sort-Object { $_.FullName.Length } -Descending
+foreach ($item in $items) {
+    if ($item.Name -match $searchText) {
+        $newName = $item.Name -replace $searchText, $replaceText
+        if ($newName -ne "") {
+            Write-Host "Renaming: $($item.FullName)"
+            Rename-Item -Path $item.FullName -NewName $newName
+        }
+    }
+}
+Write-Host "Done!"
